@@ -1,0 +1,162 @@
+package petras.bukelis.balticamadeusandroidtask.ui.fragments;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Bundle;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import petras.bukelis.balticamadeusandroidtask.R;
+import petras.bukelis.balticamadeusandroidtask.entities.Post;
+import petras.bukelis.balticamadeusandroidtask.network.services.RetroFitResponseListener;
+import petras.bukelis.balticamadeusandroidtask.ui.adapter.PostAdapter;
+import petras.bukelis.balticamadeusandroidtask.viewmodels.PostViewModel;
+import android.os.Handler;
+import android.widget.Toast;
+
+public class PostListFragment extends Fragment {
+    private PostViewModel postViewModel;
+    private RecyclerView mRecyclerView;
+    private PostAdapter mPostAdapter;
+    private List<Post> tempPostList;
+    private SwipeRefreshLayout refreshView;
+    public PostListFragment(){
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_post_list,container,false);
+        mRecyclerView = view.findViewById(R.id.recycler_view_posts);
+        refreshView = view.findViewById(R.id.refreshView);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
+        tempPostList = new ArrayList<>();
+        loadDataFromApi();
+
+    }
+    private static class PostListener implements PostAdapter.PostAdapterListener {
+
+        @Override
+        public void onPostSelected(Post post, View view) {
+            Navigation.findNavController(view).navigate(
+                    PostListFragmentDirections.actionPostListFragmentToPostDetailFragment(post));
+        }
+    }
+    private void clearRecyclerView()
+    {
+        List<Post> tempPostemptylist = new ArrayList<Post>();
+        tempPostemptylist.clear();
+        mPostAdapter = new PostAdapter(tempPostemptylist, new PostListener());
+        mRecyclerView.setAdapter(mPostAdapter);
+    }
+
+    private void imitateDelayRefresh()
+    {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshView.setRefreshing(false);
+                mPostAdapter = new PostAdapter(tempPostList, new PostListener());
+                mRecyclerView.setAdapter(mPostAdapter);
+                Toast.makeText(getContext(), "Information refreshed!", Toast.LENGTH_SHORT).show();
+            }
+        }, 3000);
+    }
+    public void showAlertDialog(View view) {
+        // setup the alert builder
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("AlertDialog");
+        builder.setMessage("Network connection failed, please check your internet connectivity and try again...");
+        // add the buttons
+        builder.setPositiveButton("Retry", null);
+        builder.setNegativeButton("Cancel", null);
+        // create and show the alert dialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        builder.setPositiveButton("Launch missile", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // do something like...
+
+            }
+        });
+    }
+
+    private void loadDataFromApi()
+    {
+        postViewModel.loadPosts(new RetroFitResponseListener() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(getContext(), "Data Loaded successfully", Toast.LENGTH_SHORT).show();
+
+                refreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        clearRecyclerView();
+                        // I imitate delay of refresh, just to show that its working.
+                        imitateDelayRefresh();
+                    }
+                });
+
+                postViewModel.getAllPosts().observe(getViewLifecycleOwner(), new Observer<List<Post>>() {
+                    @Override
+                    public void onChanged(List<Post> posts) {
+                        refreshView.setRefreshing(true);
+                        tempPostList = posts;
+                        mPostAdapter = new PostAdapter(posts, new PostListener());
+                        mRecyclerView.setAdapter(mPostAdapter);
+                        refreshView.setRefreshing(false);
+                    }
+                });
+
+                postViewModel.getPostListObserver().observe(getViewLifecycleOwner(), new Observer<List<Post>>() {
+                    @Override
+                    public void onChanged(List<Post> posts) {
+                        refreshView.setRefreshing(true);
+                        for (Post post: posts) {
+                            if(post != null) {
+                                if (!tempPostList.contains(post)) {
+                                    postViewModel.insert(new Post(post.getUserId(), post.getTitle(), post.getBody()));
+                                }
+                            }
+                        }
+                        refreshView.setRefreshing(false);
+                    }
+                });
+
+
+            }
+
+            @Override
+            public void onFailure() {
+                showAlertDialog(getView());
+                Toast.makeText(getContext(), "Data Loading failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+}
