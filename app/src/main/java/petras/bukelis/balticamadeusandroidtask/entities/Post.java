@@ -10,6 +10,9 @@ import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "post_table")
 public class Post implements Parcelable {
+    public Post() {
+    }
+    
 
     @SerializedName("id")
     @PrimaryKey(autoGenerate = true)
@@ -27,6 +30,18 @@ public class Post implements Parcelable {
     public Post(int userId, String title, String body) {
         this.userId = userId;
         this.title = title;
+        this.body = body;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setBody(String body) {
         this.body = body;
     }
 
