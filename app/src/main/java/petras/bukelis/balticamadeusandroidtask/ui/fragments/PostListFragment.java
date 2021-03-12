@@ -3,6 +3,11 @@ package petras.bukelis.balticamadeusandroidtask.ui.fragments;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -13,11 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +26,6 @@ import petras.bukelis.balticamadeusandroidtask.entities.Post;
 import petras.bukelis.balticamadeusandroidtask.network.services.RetroFitResponseListener;
 import petras.bukelis.balticamadeusandroidtask.ui.adapter.PostAdapter;
 import petras.bukelis.balticamadeusandroidtask.viewmodels.PostViewModel;
-import android.os.Handler;
-import android.widget.Toast;
 
 public class PostListFragment extends Fragment {
     private PostViewModel postViewModel;
@@ -35,6 +33,7 @@ public class PostListFragment extends Fragment {
     private PostAdapter mPostAdapter;
     private List<Post> tempPostList;
     private SwipeRefreshLayout refreshView;
+    private boolean cicleFinished = false;
     public PostListFragment(){
 
     }
@@ -53,7 +52,6 @@ public class PostListFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         postViewModel = new ViewModelProvider(this).get(PostViewModel.class);
-        tempPostList = new ArrayList<>();
         loadDataFromApi();
 
     }
@@ -79,36 +77,42 @@ public class PostListFragment extends Fragment {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                refreshView.setRefreshing(false);
-                mPostAdapter = new PostAdapter(tempPostList, new PostListener());
-                mRecyclerView.setAdapter(mPostAdapter);
+                loadDataFromApi();
                 Toast.makeText(getContext(), "Information refreshed!", Toast.LENGTH_SHORT).show();
             }
         }, 3000);
     }
     public void showAlertDialog(View view) {
-        // setup the alert builder
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("AlertDialog");
         builder.setMessage("Network connection failed, please check your internet connectivity and try again...");
-        // add the buttons
-        builder.setPositiveButton("Retry", null);
-        builder.setNegativeButton("Cancel", null);
-        // create and show the alert dialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-        builder.setPositiveButton("Launch missile", new DialogInterface.OnClickListener() {
+        // add the buttons with listeners
+        builder.setPositiveButton("Retry", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // do something like...
-
+                Toast.makeText(getContext(), "Retrying data loading...", Toast.LENGTH_SHORT).show();
+                loadDataFromApi();
             }
         });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(getContext(), "Data loading was canceled...", Toast.LENGTH_SHORT).show();
+                // Did not know what exactly to do here, as in task there was no action specified after canceling.
+                // I would think there still should be a way for user to try again, so cancel button should not be an option
+                // that way the it would reduce elements on screen and show user clear path of action.
+            }
+        });
+        // create and show the alert dialog
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void loadDataFromApi()
     {
+        cicleFinished = false;
         postViewModel.loadPosts(new RetroFitResponseListener() {
             @Override
             public void onSuccess() {
@@ -138,12 +142,20 @@ public class PostListFragment extends Fragment {
                     @Override
                     public void onChanged(List<Post> posts) {
                         refreshView.setRefreshing(true);
-                        for (Post post: posts) {
-                            if(post != null) {
-                                if (!tempPostList.contains(post)) {
-                                    postViewModel.insert(new Post(post.getUserId(), post.getTitle(), post.getBody()));
+                        try {
+                            if(!cicleFinished) {
+                                for (Post post : posts) {
+                                    if (post != null && tempPostList != null) {
+                                        if (!tempPostList.contains(post)) {
+                                            postViewModel.insert(new Post(post.getUserId(), post.getTitle(), post.getBody()));
+                                        }
+                                    }
+
                                 }
+                                cicleFinished = true;
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                         refreshView.setRefreshing(false);
                     }

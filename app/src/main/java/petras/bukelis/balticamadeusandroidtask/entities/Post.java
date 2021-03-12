@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+
 import com.google.gson.annotations.SerializedName;
 
 @Entity(tableName = "post_table")

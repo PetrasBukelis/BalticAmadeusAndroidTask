@@ -1,7 +1,6 @@
 package petras.bukelis.balticamadeusandroidtask.viewmodels;
 
 import android.app.Application;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -19,8 +18,6 @@ import petras.bukelis.balticamadeusandroidtask.repository.DBRepository;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class PostViewModel extends AndroidViewModel {
     private DBRepository repository;

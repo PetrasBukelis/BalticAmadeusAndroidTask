@@ -1,12 +1,12 @@
 package petras.bukelis.balticamadeusandroidtask.ui.activity;
 
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
-
-import android.os.Bundle;
 
 import petras.bukelis.balticamadeusandroidtask.R;
 import petras.bukelis.balticamadeusandroidtask.viewmodels.PostViewModel;

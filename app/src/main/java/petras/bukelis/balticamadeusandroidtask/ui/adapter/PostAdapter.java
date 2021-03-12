@@ -1,10 +1,8 @@
 package petras.bukelis.balticamadeusandroidtask.ui.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -56,8 +54,6 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
-        Log.d("DATAFLOWBINDVIEWHOLDER", Integer.toString(allPosts.size()));
-
         Post post = allPosts.get(position);
         holder.mPostNameTextView.setText(post.getTitle());
     }

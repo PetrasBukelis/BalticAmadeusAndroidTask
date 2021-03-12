@@ -8,12 +8,9 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 
-import petras.bukelis.balticamadeusandroidtask.db.AppDao;
-import petras.bukelis.balticamadeusandroidtask.db.AppDatabase;
 import petras.bukelis.balticamadeusandroidtask.entities.Post;
 import petras.bukelis.balticamadeusandroidtask.entities.User;
 import petras.bukelis.balticamadeusandroidtask.network.api.PostApi;
-import petras.bukelis.balticamadeusandroidtask.network.services.RetrofitService;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

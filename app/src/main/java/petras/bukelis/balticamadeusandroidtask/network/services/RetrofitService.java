@@ -1,6 +1,5 @@
 package petras.bukelis.balticamadeusandroidtask.network.services;
 
-import petras.bukelis.balticamadeusandroidtask.network.api.PostApi;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 

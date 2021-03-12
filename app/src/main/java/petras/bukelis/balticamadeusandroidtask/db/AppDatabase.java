@@ -51,8 +51,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            appDao.insertPost(new Post(1,"Title 1","Body 1"));
-            appDao.insertUser(new User("Name 1","Username 1"));
+            appDao.insertPost(new Post(53,"Title 1","Body 1"));
             return null;
         }
     }
